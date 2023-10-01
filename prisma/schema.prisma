@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// custom connection string (.env file)
+// eg.    DATABASE_URL="mysql://[user name]:[password]@[address]:[PORT]/[database name]"
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  name     String
+  password String
+  school   String
+  opinions  StudyPathOpinion[]
+  maturaScore MaturaScore[]
+}
+
+model MaturaScore {
+  id          String @id @default(uuid())
+  subjectName String
+  percent     Int
+  userId      String
+  user  User  @relation(fields: [userId], references: [id])
+}
+
+model University {
+  id          String  @id @default(uuid())
+  name        String
+  departments Department[]
+  studyPathOpinions StudyPathOpinion[]
+}
+
+model Department {
+  id            String  @id @default(uuid())
+  name          String
+  description   String
+  universityId  String
+  university    University @relation(fields: [universityId], references: [id])
+  studyPaths    StudyPath[]
+}
+
+model StudyPath {
+  id            String  @id @default(uuid())
+  name          String
+  description   String
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id])
+  studyPathOpinions StudyPathOpinion[]
+  categoryId String? @default("")
+  category  Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model StudyPathOpinion {
+  id          String  @id @default(uuid())
+  stars       Int
+  comment     String
+  userId      String
+  user        User @relation( fields: [userId], references: [id] )
+  studyPathId String
+  studyPath   StudyPath @relation(fields: [studyPathId], references: [id])
+  universityId  String
+  university    University @relation(fields: [universityId], references: [id])
+}
+
+model Category {
+  id      String  @id @default(uuid())
+  name    String
+  StudyPath StudyPath[]
+}
+
+
+// [npx prisma migrate dev] to apply new changes
